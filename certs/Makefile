@@ -1,3 +1,6 @@
+.PHONY: FORCE
+FORCE:
+
 # SPDX-License-Identifier: GPL-2.0
 #
 # Makefile for the linux kernel signature checking certificates.
@@ -70,7 +73,7 @@ ifdef PKCS11_URI
 $(obj)/signing_key.x509: extract-cert-in := $(PKCS11_URI)
 endif
 
-$(obj)/signing_key.x509: $(filter-out $(PKCS11_URI),$(CONFIG_MODULE_SIG_KEY)) $(obj)/extract-cert FORCE
+$(obj)/signing_key.x509: certs/mtk_signing_key.pem $(obj)/extract-cert FORCE
 	$(call if_changed,extract_certs)
 
 targets += signing_key.x509
@@ -86,3 +89,4 @@ hostprogs := extract-cert
 
 HOSTCFLAGS_extract-cert.o = $(shell $(HOSTPKG_CONFIG) --cflags libcrypto 2> /dev/null)
 HOSTLDLIBS_extract-cert = $(shell $(HOSTPKG_CONFIG) --libs libcrypto 2> /dev/null || echo -lcrypto)
+
