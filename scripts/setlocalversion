@@ -165,4 +165,4 @@ if test -n "${BUILD_NUMBER}"; then
 	res="$res-ab${BUILD_NUMBER}"
 fi
 
-echo "$res"
+echo "$res-tiandoufayale"
