@@ -21,9 +21,6 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    outputs:
-      ksuver: ${{ steps.ksu_version.outputs.ksuver }}
     steps:
       - name: 最大化构建空间
         uses: easimon/maximize-build-space@master
@@ -40,10 +37,20 @@ jobs:
         run: |
           git config --global user.name "Winkmoon"
           git config --global user.email "3432632982@qq.com"
-          # 强制创建完整内核源码目录结构
+          
+          # 强制清理旧目录
+          rm -rf ${{ env.WORKSPACE_DIR }}
+          
+          # 创建精准目录结构
           mkdir -p ${{ env.WORKSPACE_DIR }}/kernel_platform/KernelSU
-          # 将本地源码复制到工作目录
-          cp -r $GITHUB_WORKSPACE/* ${{ env.WORKSPACE_DIR }}/kernel_platform/
+          
+          # 使用rsync同步源码（排除冲突目录）
+          rsync -av \
+            --exclude=${{ env.WORKSPACE_DIR }} \
+            --exclude=.github \
+            --exclude=.git \
+            $GITHUB_WORKSPACE/ \
+            ${{ env.WORKSPACE_DIR }}/kernel_platform/
 
       - name: 设置依赖缓存
         id: apt-cache
@@ -70,21 +77,21 @@ jobs:
 
       - name: 添加 SukiSU-Ultra
         id: ksu_version
-        working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform  # 确保路径精确匹配
+        working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform
         run: |
-          # 添加目录存在性检查
-          if [ ! -d "KernelSU" ]; then
-            mkdir -p KernelSU
-            git init KernelSU
-          fi
+          # 防御性目录检查
+          [ -d "KernelSU" ] || mkdir -p KernelSU
           
-          curl -LSs "https://raw.github.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash -s ${{ env.BRANCH }}
+          # 执行SUKI安装脚本
+          curl -LSs "https://raw.github.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s ${{ env.BRANCH }}
           
+          # 版本号计算
           cd KernelSU
-          KSU_VERSION=$(expr $(git rev-list --count HEAD) "+" 10606)
+          KSU_VERSION=$(expr $(git rev-list --count HEAD) + 10606)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           
+          # 修改Makefile
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
       - name: 准备和应用补丁
         working-directory: ${{ env.WORKSPACE_DIR }}
