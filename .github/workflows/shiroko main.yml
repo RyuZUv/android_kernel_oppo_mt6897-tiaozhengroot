@@ -21,6 +21,9 @@ env:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    outputs:
+      ksuver: ${{ steps.ksu_version.outputs.ksuver }}
     steps:
       - name: 最大化构建空间
         uses: easimon/maximize-build-space@master
