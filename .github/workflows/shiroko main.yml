@@ -40,7 +40,10 @@ jobs:
         run: |
           git config --global user.name "Winkmoon"
           git config --global user.email "3432632982@qq.com"
-          mkdir -p ${{ env.WORKSPACE_DIR }}
+          # 强制创建完整内核源码目录结构
+          mkdir -p ${{ env.WORKSPACE_DIR }}/kernel_platform/KernelSU
+          # 将本地源码复制到工作目录
+          cp -r $GITHUB_WORKSPACE/* ${{ env.WORKSPACE_DIR }}/kernel_platform/
 
       - name: 设置依赖缓存
         id: apt-cache
@@ -67,17 +70,22 @@ jobs:
 
       - name: 添加 SukiSU-Ultra
         id: ksu_version
-        working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform
+        working-directory: ${{ env.WORKSPACE_DIR }}/kernel_platform  # 确保路径精确匹配
         run: |
-          curl -LSs "https://raw.github.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash ${{ env.BRANCH }}
+          # 添加目录存在性检查
+          if [ ! -d "KernelSU" ]; then
+            mkdir -p KernelSU
+            git init KernelSU
+          fi
           
-          cd ./KernelSU
-          KSU_VERSION=$(expr $(/usr/bin/git rev-list --count main) "+" 10606)
+          curl -LSs "https://raw.github.com/ShirkNeko/SukiSU-Ultra/refs/heads/main/kernel/setup.sh" | bash -s ${{ env.BRANCH }}
+          
+          cd KernelSU
+          KSU_VERSION=$(expr $(git rev-list --count HEAD) "+" 10606)
           echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
-
       - name: 准备和应用补丁
         working-directory: ${{ env.WORKSPACE_DIR }}
         run: |
