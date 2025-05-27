@@ -76,7 +76,8 @@ jobs:
           for f in common/scripts/setlocalversion; do
             sed -i 's/ -dirty//g' "$f"
             sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$f"
-          done
+            done
+
       - name: 开始添加 SukiSU-Ultra喵
         id: ksu_version
         run: |
