@@ -69,7 +69,7 @@ jobs:
           rm -rf kernel_workspace
           mkdir kernel_workspace && cd kernel_workspace
           echo "正在克隆私有源码仓库喵..."
-          git clone --depth=1 https://github.com/tiandoufayale/android_kernel_oppo_mt6897 common -b onepluspad
+          git clone --depth=1 https://github.com/oppo-source/android_kernel_oppo_mt6897 common -b oppo/mt6897_v_15.0.0_oppopad3
           echo "正在去除 ABI 保护 & 去除 dirty 后缀喵..."
           rm -f common/android/abi_gki_protected_exports_* || echo "不需要去除保护"
           sed -i 's/ -dirty//g' common/scripts/setlocalversion
