@@ -144,6 +144,7 @@ jobs:
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
           cd kernel/locking
+          rm -rf locking_main.h || echo "无需删除"
           wget https://github.com/chandu078/kernel_oneplus_sm8550/raw/inline/kernel/locking/oplus_locking/locking_main.h
           cd  ../../
           make -j$(nproc) LLVM=-20 ARCH=arm64 \
