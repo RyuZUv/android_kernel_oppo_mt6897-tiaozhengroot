@@ -77,7 +77,6 @@ jobs:
             sed -i 's/ -dirty//g' "$f"
             sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$f"
           done
-
       - name: 开始添加 SukiSU-Ultra喵
         id: ksu_version
         run: |
