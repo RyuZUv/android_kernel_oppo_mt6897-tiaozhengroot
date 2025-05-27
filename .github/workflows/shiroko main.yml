@@ -93,18 +93,18 @@ jobs:
           export KSU_VERSION=$KSU_VERSION
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
-      - name: 应用 SUSFS 修补程序 SukiSU-Ultra喵
-        run: |
-          cd kernel_workspace
-          git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
-          git clone https://github.com/ShirkNeko/SukiSU_patch.git
-          cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
-          cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
-          cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
-          cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
-          cd ./common
-          patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
-          patch -p1 < new_hooks.patch
+      #- name: 应用 SUSFS 修补程序 SukiSU-Ultra喵
+       # run: |
+        #  cd kernel_workspace
+        #  git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
+       #   git clone https://github.com/ShirkNeko/SukiSU_patch.git
+      #    cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
+     #     cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
+     #     cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+  #        cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
+  #        cd ./common
+     #     patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
+      #    patch -p1 < new_hooks.patch
 
       - name: 应用 Hide Stuff 修补程序喵
         run: |
