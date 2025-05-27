@@ -143,7 +143,9 @@ jobs:
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
-
+          cd kernel
+          wget https://github.com/chandu078/kernel_oneplus_sm8550/raw/inline/kernel/locking/oplus_locking/locking_main.h
+          cd  ..
           make -j$(nproc) LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
