@@ -141,6 +141,8 @@ jobs:
       - name: 开始构建kernel啦喵
         run: |
           cd kernel_workspace/common
+          sed -i '/oplus_resctrl/d' drivers/soc/Kconfig
+
           make -j$(nproc) LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
