@@ -143,6 +143,8 @@ jobs:
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
 
+sed -i '/oplus/d' drivers/soc/Kconfig
+
           make -j$(nproc) LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
