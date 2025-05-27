@@ -92,6 +92,11 @@ jobs:
           wget -q https://github.com/SukiSU-Ultra/SukiSU_patch/raw/main/69_hide_stuff.patch
           patch -p1 < 69_hide_stuff.patch || true
 
+      - name: 克隆sukisu的patch喵
+        run: |
+          cd kernel_workspace
+          git clone --depth 1 https://github.com/SukiSU-Ultra/SukiSU_patch
+
       - name: 应用 lz4k 补丁喵
         if: ${{ github.event.inputs.lz4k_enable == 'true' }}
         run: |
