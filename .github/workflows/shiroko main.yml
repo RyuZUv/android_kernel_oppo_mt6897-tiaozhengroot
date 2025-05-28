@@ -160,7 +160,7 @@ jobs:
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
 
-            - name: 开始构建kernel啦
+        - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
