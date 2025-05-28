@@ -176,7 +176,7 @@ jobs:
           echo "CONFIG_MODULE_SIG=n" >> arch/arm64/configs/gki_defconfig
           # 强制重建 KVM 模块
           rm -rf out/arch/arm64/kvm
-          make -j$(nproc) V=1 LLVM=-20 ARCH=arm64 \
+          make -j$(nproc) V=1 LLVM=-17 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
