@@ -100,6 +100,7 @@ jobs:
           patch -p1 < new_hooks.patch
 
           - name: 应用 Hide Stuff 修补程序
+
         run: |
           cd kernel_workspace/common
           cp ../SukiSU_patch/69_hide_stuff.patch ./
