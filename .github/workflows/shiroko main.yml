@@ -167,14 +167,11 @@ jobs:
     
 
       # ========== 编译阶段 ==========
-      
-
-            - name: 开始构建kernel啦
+      - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
-          echo "CONFIG_MODULE_SIG=n" >> arch/arm64/configs/gki_defconfig
           cd kernel/locking
           rm -rf locking_main.h || echo "无需删除"
           wget https://github.com/Carl1984/oppo_oplus_realme_sm8650/raw/main/patches/locking_main.h
@@ -190,8 +187,9 @@ jobs:
           make -j$(nproc) LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
-            KCFLAGS+=-Wno-error gki_defconfig all     
-      
+            KCFLAGS+=-Wno-error gki_defconfig all
+            
+            
       # ========== 后处理阶段 ==========
       - name: 应用patch_linux并修补内核
         run: |
