@@ -63,10 +63,10 @@ jobs:
             libssl-dev libelf-dev
           sudo wget https://apt.llvm.org/llvm.sh
           sudo chmod +x llvm.sh
-          # 安装 LLVM 17 稳定版
-          sudo ./llvm.sh 17 all
-          sudo update-alternatives --install /usr/bin/llvm-ar llvm-ar /usr/bin/llvm-ar-17 100
-          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 100
+          # 安装 LLVM 20 稳定版
+          sudo ./llvm.sh 20 all
+          sudo update-alternatives --install /usr/bin/llvm-ar llvm-ar /usr/bin/llvm-ar-20 100
+          sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-20 100
 
       # ========== 源码准备阶段 ==========
       - name: 初始化私有源码仓库
