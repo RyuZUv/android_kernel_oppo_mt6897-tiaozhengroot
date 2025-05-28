@@ -52,7 +52,9 @@ on:
         required: true
         type: choice
         options:
+          - ksun
           - mksu
+          - SukiUltra
 
         
 
