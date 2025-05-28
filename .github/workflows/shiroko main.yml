@@ -170,21 +170,18 @@ jobs:
       - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
-          # cd kernel_workspace
-          git clone https://github.com/cctv18/AnyKernel3 --depth=1
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
-          # 禁用模块签名验证（临时调试）
           echo "CONFIG_MODULE_SIG=n" >> arch/arm64/configs/gki_defconfig
-          # 强制重建 KVM 模块
-          rm -rf out/arch/arm64/kvm
-          make -j$(nproc) V=1 LLVM=-17 ARCH=arm64 \
+          cd kernel/locking
+          rm -rf locking_main.h || echo "无需删除"
+          wget https://github.com/chandu078/kernel_oneplus_sm8550/raw/inline/kernel/locking/oplus_locking/locking_main.h
+          cd  ../../
+          make -j$(nproc) LLVM=-17 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
-            KCFLAGS+=-Wno-error gki_defconfig all 1>/dev/null
-          # 单独验证 KVM 模块
-          make V=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out -j1 arch/arm64/kvm/
-
+            KCFLAGS+=-Wno-error gki_defconfig all
+         
       # ========== 后处理阶段 ==========
       - name: 应用patch_linux并修补内核
         run: |
