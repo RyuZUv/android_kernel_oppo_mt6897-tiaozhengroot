@@ -175,9 +175,11 @@ jobs:
           echo "CONFIG_MODULE_SIG=n" >> arch/arm64/configs/gki_defconfig
           cd kernel/locking
           rm -rf locking_main.h || echo "无需删除"
-          wget https://github.com/chandu078/kernel_oneplus_sm8550/raw/inline/kernel/locking/oplus_locking/locking_main.h
+          wget https://github.com/Carl1984/oppo_oplus_realme_sm8650/raw/inline/kernel/locking/oplus_locking/locking_main.h
+          rm -rf oplus_locking.c || echo "无需删除"
+          wget https://github.com/Carl1984/oppo_oplus_realme_sm8650/raw/main/patches/oplus_locking.c
           cd  ../../
-          make -j$(nproc) LLVM=-17 ARCH=arm64 \
+          make -j$(nproc) LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
