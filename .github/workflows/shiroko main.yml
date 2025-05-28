@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       lz4k_enable:
-        description: '是否安装 LZ4K 补丁 '
+        description: '是否安装 LZ4K 补丁'
         required: true
         type: choice
         default: 'true'
@@ -30,7 +30,7 @@ on:
           - 'true'
           - 'false'
       kernel_suffix:
-        description: '内核后缀(留空默认,开头别加连字符)'
+        description: '内核后缀(留空默认，开头别加连字符)'
         required: false
         type: string
         default: ''
@@ -99,13 +99,11 @@ jobs:
           patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
           patch -p1 < new_hooks.patch
 
-          - name: 应用 Hide Stuff 修补程序
-
+      - name: 应用 Hide Stuff 修补程序
         run: |
           cd kernel_workspace/common
           cp ../SukiSU_patch/69_hide_stuff.patch ./
           patch -p1 < 69_hide_stuff.patch
-
 
       - name: 克隆sukisu的patch
         run: |
@@ -152,23 +150,8 @@ jobs:
           cd kernel_workspace/common/scripts
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
-      - name: 添加制作名称
-        run: |
-          cd kernel_workspace
-          echo "替换内核版本后缀..."
-          if [[ -n "${{ github.event.inputs.kernel_suffix }}" ]]; then
-            echo "当前内核版本后缀：${{ github.event.inputs.kernel_suffix }}"
-            for f in ./common/scripts/setlocalversion; do
-              sed -i "\$s|echo \"\\\$res\"|echo \"-${{ github.event.inputs.kernel_suffix }}\"|" "$f"
-            done
-          else
-            echo "当前内核版本后缀：${{ env.KERNEL_NAME }}"
-            for f in ./common/scripts/setlocalversion; do
-              sed -i "\$s|echo \"\\\$res\"|echo \"-${{ env.KERNEL_NAME }}\"|" "$f"
-            done
-          fi
 
-      - name: 开始构建kernel啦
+      - name: 开始构建kernel
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
@@ -176,11 +159,12 @@ jobs:
           cd kernel/locking
           rm -rf locking_main.h || echo "无需删除"
           wget https://github.com/chandu078/kernel_oneplus_sm8550/raw/inline/kernel/locking/oplus_locking/locking_main.h
-          cd  ../../
-          make -j$(nproc) LLVM=-20 ARCH=arm64 \
+          cd ../../../
+          make -j$(nproc) LLVM=20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
+
       - name: 应用patch_linux并修补内核
         run: |
           cd kernel_workspace/common/out/arch/arm64/boot
@@ -189,7 +173,6 @@ jobs:
           ./patch_linux
           rm -f Image
           mv oImage Image
-          
 
       - name: 克隆 AnyKernel3 并打包
         run: |
@@ -224,41 +207,22 @@ jobs:
       - name: 创建 GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ env.TAG_HEAD }}-${{ github.run_number }}
-          name: ${{ env.FULL_VERSION }} Build #${{ github.run_number }}
-          body: |
-            编译时间：${{ env.TIME_FORM }}
-            ========================
-            - 内核版本：${{ env.KERNEL_VERSION }}
-            - Android 版本：${{ env.ANDROID_VERSION }}
-            - 处理器平台：${{ env.CPU }}
-          files: ./release_zips/*.zip
-          
-      - name: 创建发布
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "${{ env.TAG_HEAD }}-${{ env.TIME }}"
-          name: "${{ env.TAG_HEAD }}-${{ env.FULL_VERSION }}"
+          tag_name: "${{ github.run_number }}"
+          name: "${{ env.KERNEL_NAME }} Build #${{ github.run_number }}"
           body: |
             ### 📱 欧加真 Android 14 SukiSU-Ultra mt6897 通用内核 | 构建信息
-            - 内核版本号: ${{ env.FULL_VERSION }}
-            - 编译时间: ${{ env.TIME_FORM }}
-            - 机型：欧加mt6897 6.1 Android 14内核通用（基于oppopad Android 14 版官方OKI源码）
-            - 特性：SukiSU Ultra + SUSFS + VFS + KPM
-            - LZ4K支持：${{ github.event.inputs.lz4k_enable }}
-            - 风驰内核支持：${{ github.event.inputs.scx_enable }}
-            - 推荐系统：ColorOS 14 / RealmeUI 5.0
-            - SukiSU管理器下载：[SukiSU-Ultra](https://github.com/ShirkNeko/SukiSU-Ultra/releases)
-            ### ⏫️ 更新内容：
-            - 更新SukiSU Ultra至最新版本（${{ needs.build.outputs.ksuver }}）
-            - (预留)
-            ### 📋 安装方法 | Installation Guide
-            1. 若你的手机已经安装了第三方Recovery（如TWRP)，可下载对应机型的AnyKernel刷机包后进入Recovery模式，通过Recovery刷入刷机包后重启设备
-            2. 若你的手机之前已有 root 权限，可在手机上安装[HorizonKernelFlasher](https://github.com/libxzr/HorizonKernelFlasher/releases)，在HorizonKernelFlasher中刷入AnyKernel刷机包并重启
-            3. 若你之前已刷入SukiSU Ultra内核，且SukiSU Ultra管理器已更新至最新版本，可在SukiSU Ultra管理器中直接刷入AnyKernel刷机包并重启
-            ※※※刷写内核有风险，为防止出现意外导致手机变砖，在刷入内核前请务必用[KernelFlasher](https://github.com/capntrips/KernelFlasher)等软件备份boot等关键启动分区!※※※
+            - 内核版本: ${{ env.KERNEL_VERSION }}
+            - Android 版本: ${{ env.ANDROID_VERSION }}
+            - 处理器平台: ${{ env.CPU }}
+            - 特性: SukiSU Ultra + SUSFS + VFS + KPM
+            - LZ4K支持: ${{ github.event.inputs.lz4k_enable }}
+            - 风驰内核支持: ${{ github.event.inputs.scx_enable }}
+            - 推荐系统: ColorOS 14 / RealmeUI 5.0
+            ### 📋 安装指南
+            1. 使用第三方Recovery刷入
+            2. 通过HorizonKernelFlasher刷入
+            3. 通过SukiSU管理器直接更新
           draft: false
           prerelease: false
           files: |
-            release_zips/AnyKernel3_*.zip
+            release_zips/*.zip
