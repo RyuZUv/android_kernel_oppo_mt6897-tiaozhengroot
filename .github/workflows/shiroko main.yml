@@ -86,11 +86,25 @@ jobs:
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
-      - name: 应用 Hide Stuff 修补程序喵
+      - name: 应用 SUSFS 修补程序 SukiSU-Ultra
+        run: |
+          cd kernel_workspace
+          git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
+          git clone https://github.com/ShirkNeko/SukiSU_patch.git
+          cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
+          cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
+          cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+          cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
+          cd ./common
+          patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
+          patch -p1 < new_hooks.patch
+
+          - name: 应用 Hide Stuff 修补程序
         run: |
           cd kernel_workspace/common
-          wget -q https://github.com/SukiSU-Ultra/SukiSU_patch/raw/main/69_hide_stuff.patch
-          patch -p1 < 69_hide_stuff.patch || true
+          cp ../SukiSU_patch/69_hide_stuff.patch ./
+          patch -p1 < 69_hide_stuff.patch
+
 
       - name: 克隆sukisu的patch喵
         run: |
@@ -138,6 +152,22 @@ jobs:
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
 
+- name: 添加制作名称
+        run: |
+          cd kernel_workspace
+          echo "替换内核版本后缀..."
+          if [[ -n "${{ github.event.inputs.kernel_suffix }}" ]]; then
+            echo "当前内核版本后缀：${{ github.event.inputs.kernel_suffix }}"
+            for f in ./common/scripts/setlocalversion; do
+              sed -i "\$s|echo \"\\\$res\"|echo \"-${{ github.event.inputs.kernel_suffix }}\"|" "$f"
+            done
+          else
+            echo "当前内核版本后缀：${{ env.KERNEL_NAME }}"
+            for f in ./common/scripts/setlocalversion; do
+              sed -i "\$s|echo \"\\\$res\"|echo \"-${{ env.KERNEL_NAME }}\"|" "$f"
+            done
+          fi
+
       - name: 开始构建kernel啦喵
         run: |
           cd kernel_workspace/common
@@ -151,6 +181,16 @@ jobs:
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
+
+- name: 应用patch_linux并修补内核
+        run: |
+          cd kernel_workspace/common/out/arch/arm64/boot
+          curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
+          chmod +x patch_linux
+          ./patch_linux
+          rm -f Image
+          mv oImage Image
+          
 
       - name: 克隆 AnyKernel3 并打包喵
         run: |
