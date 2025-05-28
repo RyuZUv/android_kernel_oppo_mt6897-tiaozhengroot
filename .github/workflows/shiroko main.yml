@@ -41,6 +41,7 @@ jobs:
     outputs:
       ksuver: ${{ steps.ksu_version.outputs.ksuver }}
     steps:
+      # ========== 初始化环境 ==========
       - name: 开始最大化建筑空间
         uses: easimon/maximize-build-space@master
         with:
@@ -64,6 +65,7 @@ jobs:
           sudo chmod +x llvm.sh
           sudo ./llvm.sh 20 all
 
+      # ========== 源码准备阶段 ==========
       - name: 初始化私有源码仓库
         run: |
           rm -rf kernel_workspace
@@ -75,6 +77,7 @@ jobs:
           sed -i 's/ -dirty//g' common/scripts/setlocalversion
           sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' common/scripts/setlocalversion
 
+      # ========== KernelSU 集成 ==========
       - name: 开始添加 SukiSU-Ultra
         id: ksu_version
         run: |
@@ -86,6 +89,8 @@ jobs:
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
+      # ========== 补丁应用阶段 ==========
+      # 旧版 SUSFS 补丁应用方式 (保留注释)
       #- name: 应用 SUSFS 修补程序 SukiSU-Ultra
       #  run: |
       #    cd kernel_workspace
@@ -118,7 +123,6 @@ jobs:
           cp ../SukiSU_patch/69_hide_stuff.patch ./
           patch -p1 < 69_hide_stuff.patch
 
-  
       - name: 应用 lz4k 补丁
         if: ${{ github.event.inputs.lz4k_enable == 'true' }}
         run: |
@@ -129,6 +133,7 @@ jobs:
           cp ../SukiSU_patch/other/zram/zram_patch/${{ env.KERNEL_VERSION }}/lz4kd.patch .
           patch -p1 -F 3 < lz4kd.patch || true
 
+      # ========== 内核配置阶段 ==========
       - name: 添加 SUSFS 配置设置
         run: |
           cd kernel_workspace/common
@@ -160,16 +165,18 @@ jobs:
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
 
-        - name: 开始构建kernel啦
+      # ========== 编译阶段 ==========
+      - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
-          make -j$(nproc) V=1 LLVM=-20 ARCH=arm64 \  # 添加 V=1
+          make -j$(nproc) V=1 LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
-            
+
+      # ========== 后处理阶段 ==========
       - name: 应用patch_linux并修补内核
         run: |
           cd kernel_workspace/common/out/arch/arm64/boot
