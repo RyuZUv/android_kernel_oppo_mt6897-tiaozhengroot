@@ -1,4 +1,4 @@
-name: 欧加真mt6897内核编译喵
+name: 欧加真mt6897内核编译
 
 env:
   TZ: Asia/Shanghai
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       lz4k_enable:
-        description: '是否安装 LZ4K 补丁喵'
+        description: '是否安装 LZ4K 补丁 '
         required: true
         type: choice
         default: 'true'
@@ -22,7 +22,7 @@ on:
           - 'true'
           - 'false'
       scx_enable:
-        description: '是否安装风驰内核驱动喵'
+        description: '是否安装风驰内核驱动'
         required: true
         type: choice
         default: 'true'
@@ -41,7 +41,7 @@ jobs:
     outputs:
       ksuver: ${{ steps.ksu_version.outputs.ksuver }}
     steps:
-      - name: 开始最大化建筑空间喵
+      - name: 开始最大化建筑空间
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
@@ -52,7 +52,7 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: 安装配置环境所需依赖组件喵
+      - name: 安装配置环境所需依赖组件
         run: |
           sudo apt update
           sudo apt install -y llvm clang cmake \
@@ -64,18 +64,18 @@ jobs:
           sudo chmod +x llvm.sh
           sudo ./llvm.sh 20 all
 
-      - name: 初始化私有源码仓库喵
+      - name: 初始化私有源码仓库
         run: |
           rm -rf kernel_workspace
           mkdir kernel_workspace && cd kernel_workspace
-          echo "正在克隆私有源码仓库喵..."
+          echo "正在克隆私有源码仓库..."
           git clone --depth=1 https://github.com/oppo-source/android_kernel_oppo_mt6897 common -b oppo/mt6897_v_15.0.0_oppopad3
-          echo "正在去除 ABI 保护 & 去除 dirty 后缀喵..."
+          echo "正在去除 ABI 保护 & 去除 dirty 后缀..."
           rm -f common/android/abi_gki_protected_exports_* || echo "不需要去除保护"
           sed -i 's/ -dirty//g' common/scripts/setlocalversion
           sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' common/scripts/setlocalversion
 
-      - name: 开始添加 SukiSU-Ultra喵
+      - name: 开始添加 SukiSU-Ultra
         id: ksu_version
         run: |
           cd kernel_workspace
@@ -106,12 +106,12 @@ jobs:
           patch -p1 < 69_hide_stuff.patch
 
 
-      - name: 克隆sukisu的patch喵
+      - name: 克隆sukisu的patch
         run: |
           cd kernel_workspace
           git clone --depth 1 https://github.com/SukiSU-Ultra/SukiSU_patch
 
-      - name: 应用 lz4k 补丁喵
+      - name: 应用 lz4k 补丁
         if: ${{ github.event.inputs.lz4k_enable == 'true' }}
         run: |
           cd kernel_workspace/common
@@ -121,7 +121,7 @@ jobs:
           cp ../SukiSU_patch/other/zram/zram_patch/${{ env.KERNEL_VERSION }}/lz4kd.patch .
           patch -p1 -F 3 < lz4kd.patch || true
 
-      - name: 添加 SUSFS 配置设置喵
+      - name: 添加 SUSFS 配置设置
         run: |
           cd kernel_workspace/common
           cat <<EOF >> arch/arm64/configs/gki_defconfig
@@ -146,7 +146,7 @@ jobs:
           EOF
           sed -i 's/check_defconfig//' build.config.gki
 
-      - name: 添加内核附加名称喵
+      - name: 添加内核附加名称
         run: |
           cd kernel_workspace/common/scripts
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
@@ -167,7 +167,7 @@ jobs:
             done
           fi
 
-      - name: 开始构建kernel啦喵
+      - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
@@ -190,7 +190,7 @@ jobs:
           mv oImage Image
           
 
-      - name: 克隆 AnyKernel3 并打包喵
+      - name: 克隆 AnyKernel3 并打包
         run: |
           cd kernel_workspace
           git clone https://github.com/cctv18/AnyKernel3 --depth=1
@@ -202,7 +202,7 @@ jobs:
             zip_name+="_${{ env.KERNEL_NAME }}"
           zip -r9 ../${zip_name}.zip ./*
 
-      - name: 上传 ZIP 工件喵
+      - name: 上传 ZIP 工件
         uses: actions/upload-artifact@v4
         with:
           name: Kernel_ZIP_${{ github.run_number }}
@@ -214,7 +214,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: 下载 ZIP 工件喵
+      - name: 下载 ZIP 工件
         uses: actions/download-artifact@v4
         with:
           name: Kernel_ZIP_${{ github.run_number }}
@@ -233,7 +233,7 @@ jobs:
             - 处理器平台：${{ env.CPU }}
           files: ./release_zips/*.zip
           
-      - name: 创建发布喵
+      - name: 创建发布
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
