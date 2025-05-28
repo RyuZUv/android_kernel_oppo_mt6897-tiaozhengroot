@@ -179,7 +179,7 @@ jobs:
           make -j$(nproc) V=1 LLVM=-17 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
-            KCFLAGS+=-Wno-error gki_defconfig all
+            KCFLAGS+=-Wno-error gki_defconfig all 1>/dev/null
           # 单独验证 KVM 模块
           make V=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out -j1 arch/arm64/kvm/
 
