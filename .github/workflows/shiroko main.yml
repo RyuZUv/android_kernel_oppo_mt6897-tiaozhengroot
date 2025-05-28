@@ -169,8 +169,8 @@ jobs:
       # ========== 编译阶段 ==========
       - name: 开始构建kernel啦
         run: |
-          # cd kernel_workspace/common
-          cd kernel_workspace
+          cd kernel_workspace/common
+          # cd kernel_workspace
           git clone https://github.com/cctv18/AnyKernel3 --depth=1
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
