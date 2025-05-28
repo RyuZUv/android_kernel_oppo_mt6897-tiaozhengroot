@@ -42,18 +42,19 @@ jobs:
       ksuver: ${{ steps.ksu_version.outputs.ksuver }}
     steps:
       # ========== 初始化环境 ==========
-      - name: 开始最大化建筑空间
+            - name: 开始最大化建筑空间
         uses: easimon/maximize-build-space@master
         with:
           root-reserve-mb: 8192
           temp-reserve-mb: 2048
-          swap-size-mb: 8192
+-         swap-size-mb: 8192
++         swap-size-mb: 16384
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - name: 安装配置环境所需依赖组件
+            - name: 安装配置环境所需依赖组件
         run: |
           sudo apt update
           sudo apt install -y llvm clang cmake \
@@ -63,7 +64,11 @@ jobs:
             libssl-dev libelf-dev
           sudo wget https://apt.llvm.org/llvm.sh
           sudo chmod +x llvm.sh
-          sudo ./llvm.sh 20 all
+-         sudo ./llvm.sh 20 all
++         # 安装 LLVM 17 稳定版
++         sudo ./llvm.sh 17 all
++         sudo update-alternatives --install /usr/bin/llvm-ar llvm-ar /usr/bin/llvm-ar-17 100
++         sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-17 100
 
       # ========== 源码准备阶段 ==========
       - name: 初始化私有源码仓库
@@ -104,16 +109,26 @@ jobs:
       #    patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
       #    patch -p1 < new_hooks.patch
 
-      - name: 应用 SUSFS 修补程序 SukiSU-Ultra
+            - name: 应用 SUSFS 修补程序 SukiSU-Ultra
         run: |
           cd kernel_workspace
           git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
++         # 增加补丁验证步骤
++         if [ ! -f ./common/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ]; then
++           echo "补丁文件不存在！"
++           exit 1
++         fi
           cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
           cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
           cd ./common
++         # 增加补丁应用验证
++         if ! patch --dry-run -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch; then
++           echo "补丁应用失败！"
++           exit 1
++         fi
           patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch
           patch -p1 < new_hooks.patch
 
@@ -165,16 +180,45 @@ jobs:
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
 
+
+      - name: 预检 KVM 模块文件
+        run: |
+          cd kernel_workspace/common
+          # 验证关键文件存在
+          required_files=(
+            "arch/arm64/kvm/hyp/Makefile"
+            "arch/arm64/kvm/hyp/nvhe/Makefile"
+            "virt/kvm/kvm_main.c"
+          )
+          
+          for file in "${required_files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "缺失关键文件: $file"
+              exit 1
+            fi
+          done
+          
+          # 检查目标文件生成路径
+          echo "验证编译输出目录结构..."
+          mkdir -p out/arch/arm64/kvm
+          ls -lR virt/kvm/ | grep -E '\.o$'
+
       # ========== 编译阶段 ==========
-      - name: 开始构建kernel啦
+            - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
++         # 禁用模块签名验证（临时调试）
++         echo "CONFIG_MODULE_SIG=n" >> arch/arm64/configs/gki_defconfig
++         # 强制重建 KVM 模块
++         rm -rf out/arch/arm64/kvm
           make -j$(nproc) V=1 LLVM=-20 ARCH=arm64 \
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
++         # 单独验证 KVM 模块
++         make V=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- O=out -j1 arch/arm64/kvm/
 
       # ========== 后处理阶段 ==========
       - name: 应用patch_linux并修补内核
