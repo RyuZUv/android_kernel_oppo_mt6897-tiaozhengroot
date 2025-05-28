@@ -105,11 +105,7 @@ jobs:
           cp ../SukiSU_patch/69_hide_stuff.patch ./
           patch -p1 < 69_hide_stuff.patch
 
-      - name: 克隆sukisu的patch
-        run: |
-          cd kernel_workspace
-          git clone --depth 1 https://github.com/SukiSU-Ultra/SukiSU_patch
-
+  
       - name: 应用 lz4k 补丁
         if: ${{ github.event.inputs.lz4k_enable == 'true' }}
         run: |
