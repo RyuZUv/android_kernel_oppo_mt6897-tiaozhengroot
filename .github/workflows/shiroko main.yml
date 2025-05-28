@@ -180,8 +180,7 @@ jobs:
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
-
-- name: 应用patch_linux并修补内核
+      - name: 应用patch_linux并修补内核
         run: |
           cd kernel_workspace/common/out/arch/arm64/boot
           curl -LO https://github.com/ShirkNeko/SukiSU_KernelPatch_patch/releases/download/0.11-beta/patch_linux
