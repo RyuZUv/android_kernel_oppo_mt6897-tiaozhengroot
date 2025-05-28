@@ -86,6 +86,19 @@ jobs:
           echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
           sed -i "s/DKSU_VERSION=12800/DKSU_VERSION=$KSU_VERSION/" kernel/Makefile
 
+      #- name: 应用 SUSFS 修补程序 SukiSU-Ultra
+      #  run: |
+      #    cd kernel_workspace
+      #    git clone https://github.com/ShirkNeko/susfs4ksu.git -b gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}
+      #    git clone https://github.com/ShirkNeko/SukiSU_patch.git
+      #    cp ./susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch ./common/
+      #    cp ./susfs4ksu/kernel_patches/fs/* ./common/fs/
+      #    cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
+      #    cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
+      #    cd ./common
+      #    patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
+      #    patch -p1 < new_hooks.patch
+
       - name: 应用 SUSFS 修补程序 SukiSU-Ultra
         run: |
           cd kernel_workspace
@@ -96,7 +109,7 @@ jobs:
           cp ./susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
           cp ./SukiSU_patch/hooks/new_hooks.patch ./common/
           cd ./common
-          patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch || true
+          patch -p1 < 50_add_susfs_in_gki-${{ env.ANDROID_VERSION }}-${{ env.KERNEL_VERSION }}.patch
           patch -p1 < new_hooks.patch
 
       - name: 应用 Hide Stuff 修补程序
@@ -147,16 +160,16 @@ jobs:
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
 
-      - name: 开始构建kernel啦
+            - name: 开始构建kernel啦
         run: |
           cd kernel_workspace/common
           sed -i '/oplus/d' Kconfig.ext
           sed -i '/oplus/d' drivers/soc/Kconfig
-          make -j$(nproc) LLVM=-20 ARCH=arm64 \
+          make -j$(nproc) V=1 LLVM=-20 ARCH=arm64 \  # 添加 V=1
             CROSS_COMPILE=aarch64-linux-gnu- \
             CC=clang LD=ld.lld O=out \
             KCFLAGS+=-Wno-error gki_defconfig all
-
+            
       - name: 应用patch_linux并修补内核
         run: |
           cd kernel_workspace/common/out/arch/arm64/boot
