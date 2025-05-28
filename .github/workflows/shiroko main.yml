@@ -151,8 +151,7 @@ jobs:
           cd kernel_workspace/common/scripts
           suffix="${{ github.event.inputs.kernel_suffix || env.KERNEL_NAME }}"
           sed -i "\$s|echo \"\\\$res\"|echo \"-$suffix\"|" setlocalversion
-
-- name: 添加制作名称
+      - name: 添加制作名称
         run: |
           cd kernel_workspace
           echo "替换内核版本后缀..."
