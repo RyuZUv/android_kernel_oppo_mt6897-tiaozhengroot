@@ -40,7 +40,7 @@ on:
         required: true
         type: choice
         options:
-          - mt6897_v_15.0.0_onepluspad
+          - mt6897_v_15.0.2_oppo_reno_14
           
       KPM:
         type: boolean
