@@ -1,4 +1,4 @@
-name: ShirokoNeko-Ksun-Mt6897编译项目
+name: ShirokoNeko-Ksun-Mt6897-一加pad 115适配
 env:
   TZ: Asia/Shanghai
   CPU: 'MT6897'
@@ -100,21 +100,21 @@ jobs:
         run: |
           rm -rf kernel_workspace && mkdir kernel_workspace && cd kernel_workspace
           echo "正在克隆源码仓库..."
-          # git clone --depth=1 https://github.com/oppo-source/android_kernel_oppo_mt6897 common -b oppo/mt6897_v_15.0.0_oppopad3
+          #git clone --depth=1 https://github.com/oppo-source/android_kernel_oppo_mt6897 common -b oppo/mt6897_v_15.0.0_oppopad3
           git clone --depth=1 https://github.com/oppo-source/android_kernel_oppo_mt6897.git common -b oppo/mt6897_v_15.0.2_oppo_reno_14
-          # git clone --depth=1 https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm8650 -b oneplus/"${{ github.event.inputs.basebranch }}" common
-          git clone https://github.com/Carl1984/oppo_oplus_realme_sm8650.git
-          cp ./oppo_oplus_realme_sm8650/patches/001-lz4.patch ./common/
-          cp ./oppo_oplus_realme_sm8650/patches/002-zstd.patch ./common/
+          #git clone --depth=1 https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm8650 -b oneplus/"${{ github.event.inputs.basebranch }}" common
+          #git clone https://github.com/Carl1984/oppo_oplus_realme_sm8650.git
+          #cp ./oppo_oplus_realme_sm8650/patches/001-lz4.patch ./common/
+          #cp ./oppo_oplus_realme_sm8650/patches/002-zstd.patch ./common/
           
           # rm -rf ./common/drivers/soc/oplus/*
           # cp -r ./oppo_oplus_realme_sm8650/Vendor/* ./common/drivers/soc/oplus/
-          rm -rf ./common/kernel/locking/locking_main.h
-          cp ./oppo_oplus_realme_sm8650/patches/locking_main.h ./common/kernel/locking/
-          rm -rf ./common/kernel/locking/oplus_locking.c
-          cp ./oppo_oplus_realme_sm8650/patches/oplus_locking.c ./common/kernel/locking/
-          rm -rf ./common/kernel/locking/sa_common_struct.h
-          cp ./oppo_oplus_realme_sm8650/patches/sa_common_struct.h ./common/kernel/locking/
+          #rm -rf ./common/kernel/locking/locking_main.h
+          #cp ./oppo_oplus_realme_sm8650/patches/locking_main.h ./common/kernel/locking/
+          #rm -rf ./common/kernel/locking/oplus_locking.c
+          #cp ./oppo_oplus_realme_sm8650/patches/oplus_locking.c ./common/kernel/locking/
+          #rm -rf ./common/kernel/locking/sa_common_struct.h
+          #cp ./oppo_oplus_realme_sm8650/patches/sa_common_struct.h ./common/kernel/locking/
           
           echo "正在去除 ABI 保护 & 去除 dirty 后缀..."
           rm common/android/abi_gki_protected_exports_* || true
@@ -246,7 +246,7 @@ jobs:
           # sed -i '/oplus/d' Kconfig.ext
           # sed -i '/oplus/d' drivers/soc/Kconfig
           # wget https://github.com/huifanghf/android_kernel_modules_oneplus_mt6895/raw/15/oplus/kernel/mm/mm_osvelte/mm-trace.h
-          wget https://github.com/oppo-source/android_kernel_modules_and_devicetree_oppo_mt6897/raw/oppo/mt6897_v_15.0.0_oppopad3/vendor/oplus/kernel/mm/mm_osvelte/mm-trace.h
+          wget https://github.com/oppo-source/android_kernel_modules_and_devicetree_oppo_mt6897/raw/oppo/mt6897_v_15.0.2_oppo_reno_14/vendor/oplus/kernel/mm/mm_osvelte/mm-trace.h
           rm -rf mm/mm-trace.h || echo "不需要删除"
           cp -f mm-trace.h mm/
           export LTO=thin SYSTEM_DLKM_RE_SIGN=0 BUILD_SYSTEM_DLKM=0 KMI_SYMBOL_LIST_STRICT_MODE=0
